@@ -1,6 +1,6 @@
 import logging
 
-from crawler import Crawler
+from crawler import Crawler, URLManager
 
 
 logging.basicConfig(
@@ -10,26 +10,69 @@ logging.basicConfig(
 
 
 def main():
+    start_url = "https://example.com"
+
     crawler = Crawler(timeout=10)
 
-    url = "https://google.com"
+    url_manager = URLManager(
+        start_url=start_url,
+        max_pages=10
+    )
 
-    result = crawler.fetch(url)
+    while url_manager.has_pending_urls():
+        url = url_manager.get_next_url()
 
-    if result["success"]:
-        print("Crawl successful!")
-        print(f"Original URL: {result['url']}")
-        print(f"Final URL: {result['final_url']}")
-        print(f"Status code: {result['status_code']}")
-        print(f"Content type: {result['content_type']}")
+        print(f"\nCrawling: {url}")
 
-        print("\nHTML preview:")
-        print(result["html"][:500])
+        result = crawler.fetch(url)
 
-    else:
-        print("Crawl failed!")
-        print(f"URL: {result['url']}")
-        print(f"Error: {result['error']}")
+        if not result["success"]:
+            print(
+                f"Failed to crawl {url}: "
+                f"{result['error']}"
+            )
+            continue
+
+        print(
+            f"Successfully fetched "
+            f"{result['final_url']}"
+        )
+
+        print(
+            f"Status code: "
+            f"{result['status_code']}"
+        )
+
+        print(
+            f"HTML size: "
+            f"{len(result['html'])} characters"
+        )
+
+        # ------------------------------------------------
+        # Temporary link demonstration
+        # ------------------------------------------------
+        #
+        # Feature 4 will extract links properly using
+        # an HTML parser.
+        #
+        # For now, the URL manager itself is ready to
+        # receive links.
+        #
+        # Example:
+        #
+        # links = [
+        #     "/about",
+        #     "/contact"
+        # ]
+        #
+        # url_manager.add_links(url, links)
+
+    print("\nCrawling finished.")
+
+    print(
+        f"URLs scheduled: "
+        f"{url_manager.visited_count()}"
+    )
 
 
 if __name__ == "__main__":
