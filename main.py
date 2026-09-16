@@ -8,6 +8,7 @@ from accessibility import (
     title_check,
     heading_check,
     image_check,
+    link_check,
 )
 
 
@@ -31,7 +32,6 @@ def main():
 
     evaluator = AccessibilityEvaluator()
 
-    # Register accessibility rules.
     evaluator.register_rule(
         language_check
     )
@@ -46,6 +46,10 @@ def main():
 
     evaluator.register_rule(
         image_check
+    )
+
+    evaluator.register_rule(
+        link_check
     )
 
     while url_manager.has_pending_urls():
