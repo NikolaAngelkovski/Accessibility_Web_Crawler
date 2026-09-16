@@ -4,6 +4,7 @@ from .rules import (
     title_check,
     heading_check,
     image_check,
+    link_check,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "title_check",
     "heading_check",
     "image_check",
+    "link_check",
 ]
