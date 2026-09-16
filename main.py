@@ -2,6 +2,7 @@ import logging
 
 from crawler import Crawler, URLManager
 from parser import HTMLParser
+from accessibility import AccessibilityEvaluator
 
 
 logging.basicConfig(
@@ -10,14 +11,52 @@ logging.basicConfig(
 )
 
 
-def main():
-    start_url = "https://example.com"
+def example_rule(page_data):
+    """
+    Temporary accessibility rule used to demonstrate
+    the accessibility engine.
 
-    crawler = Crawler(timeout=10)
+    Real accessibility rules will be added in
+    Features 6-11.
+    """
+
+    title = page_data.get("title")
+
+    if title:
+        return {
+            "rule": "example_title_check",
+            "status": "pass",
+            "message": "Page contains a title.",
+            "details": {
+                "title": title
+            }
+        }
+
+    return {
+        "rule": "example_title_check",
+        "status": "fail",
+        "message": "Page does not contain a title.",
+        "details": None
+    }
+
+
+def main():
+    start_url = "https://finki.ukim.mk"
+
+    crawler = Crawler(
+        timeout=10
+    )
 
     url_manager = URLManager(
         start_url=start_url,
         max_pages=10
+    )
+
+    evaluator = AccessibilityEvaluator()
+
+    # Temporary rule for Feature 5.
+    evaluator.register_rule(
+        example_rule
     )
 
     while url_manager.has_pending_urls():
@@ -30,78 +69,99 @@ def main():
         # Fetch page
         # -----------------------------------------
 
-        result = crawler.fetch(url)
+        crawl_result = crawler.fetch(url)
 
-        if not result["success"]:
+        if not crawl_result["success"]:
             print(
                 f"Failed to crawl {url}: "
-                f"{result['error']}"
+                f"{crawl_result['error']}"
             )
             continue
-
-        print(
-            f"Successfully fetched: "
-            f"{result['final_url']}"
-        )
 
         # -----------------------------------------
         # Parse HTML
         # -----------------------------------------
 
         parser = HTMLParser(
-            html=result["html"],
-            base_url=result["final_url"]
+            html=crawl_result["html"],
+            base_url=crawl_result["final_url"]
         )
 
-        parsed_page = parser.parse()
+        page_data = parser.parse()
 
         # -----------------------------------------
-        # Display extracted information
+        # Display parsed information
         # -----------------------------------------
 
         print(
             f"Title: "
-            f"{parsed_page['title']}"
+            f"{page_data['title']}"
         )
 
         print(
             f"Language: "
-            f"{parsed_page['language']}"
+            f"{page_data['language']}"
         )
 
         print(
             f"Headings: "
-            f"{len(parsed_page['headings'])}"
+            f"{len(page_data['headings'])}"
         )
 
         print(
             f"Images: "
-            f"{len(parsed_page['images'])}"
+            f"{len(page_data['images'])}"
         )
 
         print(
             f"Links: "
-            f"{len(parsed_page['links'])}"
+            f"{len(page_data['links'])}"
         )
 
         print(
             f"Forms: "
-            f"{len(parsed_page['forms'])}"
+            f"{len(page_data['forms'])}"
         )
 
         # -----------------------------------------
-        # Add discovered links to URL manager
+        # Accessibility evaluation
         # -----------------------------------------
-        #
-        # This connects Feature 4 to Feature 3.
-        #
-        # The URL manager decides which links are
-        # actually allowed into the crawl queue.
+
+        evaluation = evaluator.evaluate(
+            page_data
+        )
+
+        summary = evaluation["summary"]
+
+        print("\nAccessibility Results:")
+
+        print(
+            f"Passed: "
+            f"{summary['passed']}"
+        )
+
+        print(
+            f"Warnings: "
+            f"{summary['warnings']}"
+        )
+
+        print(
+            f"Failed: "
+            f"{summary['failed']}"
+        )
+
+        print(
+            f"Errors: "
+            f"{summary['errors']}"
+        )
+
+        # -----------------------------------------
+        # Add discovered links
         # -----------------------------------------
 
         links = [
             link["url"]
-            for link in parsed_page["links"]
+            for link in page_data["links"]
             if link["url"] is not None
         ]
 
