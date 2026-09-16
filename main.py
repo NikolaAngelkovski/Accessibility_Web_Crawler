@@ -2,42 +2,16 @@ import logging
 
 from crawler import Crawler, URLManager
 from parser import HTMLParser
-from accessibility import AccessibilityEvaluator
+from accessibility import (
+    AccessibilityEvaluator,
+    language_check,
+)
 
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
-
-def example_rule(page_data):
-    """
-    Temporary accessibility rule used to demonstrate
-    the accessibility engine.
-
-    Real accessibility rules will be added in
-    Features 6-11.
-    """
-
-    title = page_data.get("title")
-
-    if title:
-        return {
-            "rule": "example_title_check",
-            "status": "pass",
-            "message": "Page contains a title.",
-            "details": {
-                "title": title
-            }
-        }
-
-    return {
-        "rule": "example_title_check",
-        "status": "fail",
-        "message": "Page does not contain a title.",
-        "details": None
-    }
 
 
 def main():
@@ -54,9 +28,8 @@ def main():
 
     evaluator = AccessibilityEvaluator()
 
-    # Temporary rule for Feature 5.
     evaluator.register_rule(
-        example_rule
+        language_check
     )
 
     while url_manager.has_pending_urls():
@@ -64,10 +37,6 @@ def main():
         url = url_manager.get_next_url()
 
         print(f"\nCrawling: {url}")
-
-        # -----------------------------------------
-        # Fetch page
-        # -----------------------------------------
 
         crawl_result = crawler.fetch(url)
 
@@ -78,20 +47,12 @@ def main():
             )
             continue
 
-        # -----------------------------------------
-        # Parse HTML
-        # -----------------------------------------
-
         parser = HTMLParser(
             html=crawl_result["html"],
             base_url=crawl_result["final_url"]
         )
 
         page_data = parser.parse()
-
-        # -----------------------------------------
-        # Display parsed information
-        # -----------------------------------------
 
         print(
             f"Title: "
@@ -123,17 +84,22 @@ def main():
             f"{len(page_data['forms'])}"
         )
 
-        # -----------------------------------------
-        # Accessibility evaluation
-        # -----------------------------------------
-
         evaluation = evaluator.evaluate(
             page_data
         )
 
+        print("\nAccessibility Results:")
+
+        for result in evaluation["results"]:
+            print(
+                f"- {result['rule']}: "
+                f"{result['status']} - "
+                f"{result['message']}"
+            )
+
         summary = evaluation["summary"]
 
-        print("\nAccessibility Results:")
+        print("\nAccessibility Summary:")
 
         print(
             f"Passed: "
@@ -154,10 +120,6 @@ def main():
             f"Errors: "
             f"{summary['errors']}"
         )
-
-        # -----------------------------------------
-        # Add discovered links
-        # -----------------------------------------
 
         links = [
             link["url"]
