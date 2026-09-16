@@ -1,6 +1,7 @@
 import logging
 
 from crawler import Crawler, URLManager
+from parser import HTMLParser
 
 
 logging.basicConfig(
@@ -20,9 +21,14 @@ def main():
     )
 
     while url_manager.has_pending_urls():
+
         url = url_manager.get_next_url()
 
         print(f"\nCrawling: {url}")
+
+        # -----------------------------------------
+        # Fetch page
+        # -----------------------------------------
 
         result = crawler.fetch(url)
 
@@ -34,43 +40,80 @@ def main():
             continue
 
         print(
-            f"Successfully fetched "
+            f"Successfully fetched: "
             f"{result['final_url']}"
         )
 
+        # -----------------------------------------
+        # Parse HTML
+        # -----------------------------------------
+
+        parser = HTMLParser(
+            html=result["html"],
+            base_url=result["final_url"]
+        )
+
+        parsed_page = parser.parse()
+
+        # -----------------------------------------
+        # Display extracted information
+        # -----------------------------------------
+
         print(
-            f"Status code: "
-            f"{result['status_code']}"
+            f"Title: "
+            f"{parsed_page['title']}"
         )
 
         print(
-            f"HTML size: "
-            f"{len(result['html'])} characters"
+            f"Language: "
+            f"{parsed_page['language']}"
         )
 
-        # ------------------------------------------------
-        # Temporary link demonstration
-        # ------------------------------------------------
+        print(
+            f"Headings: "
+            f"{len(parsed_page['headings'])}"
+        )
+
+        print(
+            f"Images: "
+            f"{len(parsed_page['images'])}"
+        )
+
+        print(
+            f"Links: "
+            f"{len(parsed_page['links'])}"
+        )
+
+        print(
+            f"Forms: "
+            f"{len(parsed_page['forms'])}"
+        )
+
+        # -----------------------------------------
+        # Add discovered links to URL manager
+        # -----------------------------------------
         #
-        # Feature 4 will extract links properly using
-        # an HTML parser.
+        # This connects Feature 4 to Feature 3.
         #
-        # For now, the URL manager itself is ready to
-        # receive links.
-        #
-        # Example:
-        #
-        # links = [
-        #     "/about",
-        #     "/contact"
-        # ]
-        #
-        # url_manager.add_links(url, links)
+        # The URL manager decides which links are
+        # actually allowed into the crawl queue.
+        # -----------------------------------------
+
+        links = [
+            link["url"]
+            for link in parsed_page["links"]
+            if link["url"] is not None
+        ]
+
+        url_manager.add_links(
+            url,
+            links
+        )
 
     print("\nCrawling finished.")
 
     print(
-        f"URLs scheduled: "
+        f"Total URLs scheduled: "
         f"{url_manager.visited_count()}"
     )
 
