@@ -5,6 +5,7 @@ from parser import HTMLParser
 from accessibility import (
     AccessibilityEvaluator,
     language_check,
+    title_check,
 )
 
 
@@ -28,8 +29,13 @@ def main():
 
     evaluator = AccessibilityEvaluator()
 
+    # Register accessibility rules.
     evaluator.register_rule(
         language_check
+    )
+
+    evaluator.register_rule(
+        title_check
     )
 
     while url_manager.has_pending_urls():
