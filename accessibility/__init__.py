@@ -3,6 +3,7 @@ from .rules import (
     language_check,
     title_check,
     heading_check,
+    image_check,
 )
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "language_check",
     "title_check",
     "heading_check",
+    "image_check",
 ]
