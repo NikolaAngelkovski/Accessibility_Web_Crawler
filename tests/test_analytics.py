@@ -1,5 +1,5 @@
 from analytics import Analytics
-from storage import Database
+from database import Database
 
 
 def create_crawl_result(url):
