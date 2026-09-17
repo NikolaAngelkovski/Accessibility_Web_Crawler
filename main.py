@@ -10,6 +10,7 @@ from accessibility import (
     image_check,
     link_check,
 )
+from database import Database
 
 
 logging.basicConfig(
@@ -51,6 +52,8 @@ def main():
     evaluator.register_rule(
         link_check
     )
+
+    database = Database("crawler.db")
 
     while url_manager.has_pending_urls():
 
@@ -108,6 +111,12 @@ def main():
             page_data
         )
 
+        database.save_page(
+            crawl_result,
+            page_data,
+            evaluation
+        )
+
         print("\nAccessibility Results:")
 
         for result in evaluation["results"]:
@@ -158,6 +167,13 @@ def main():
         f"Total URLs scheduled: "
         f"{url_manager.visited_count()}"
     )
+
+    print(
+        f"Pages stored in database: "
+        f"{database.count_pages()}"
+    )
+
+    database.close()
 
 
 if __name__ == "__main__":
