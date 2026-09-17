@@ -12,6 +12,7 @@ from accessibility import (
     link_check,
 )
 from database import Database
+from analytics import Analytics
 
 
 logging.basicConfig(
@@ -56,7 +57,13 @@ def main():
 
     scorer = AccessibilityScorer()
 
-    database = Database("crawler.db")
+    database = Database(
+        "crawler.db"
+    )
+
+    analytics = Analytics(
+        database
+    )
 
     while url_manager.has_pending_urls():
 
@@ -64,7 +71,9 @@ def main():
 
         print(f"\nCrawling: {url}")
 
-        crawl_result = crawler.fetch(url)
+        crawl_result = crawler.fetch(
+            url
+        )
 
         if not crawl_result["success"]:
             print(
@@ -190,6 +199,55 @@ def main():
     print(
         f"Pages stored in database: "
         f"{database.count_pages()}"
+    )
+
+    overview = analytics.get_overview()
+
+    print("\nAnalytics:")
+
+    print(
+        f"Total pages: "
+        f"{overview['total_pages']}"
+    )
+
+    print(
+        f"Average accessibility score: "
+        f"{overview['average_score']}/100"
+    )
+
+    print(
+        f"Highest score: "
+        f"{overview['highest_score']}/100"
+    )
+
+    print(
+        f"Lowest score: "
+        f"{overview['lowest_score']}/100"
+    )
+
+    print(
+        f"Total rules evaluated: "
+        f"{overview['total_rules']}"
+    )
+
+    print(
+        f"Passed: "
+        f"{overview['passed']}"
+    )
+
+    print(
+        f"Warnings: "
+        f"{overview['warnings']}"
+    )
+
+    print(
+        f"Failed: "
+        f"{overview['failed']}"
+    )
+
+    print(
+        f"Errors: "
+        f"{overview['errors']}"
     )
 
     database.close()
