@@ -1,4 +1,5 @@
 from .evaluator import AccessibilityEvaluator
+from .scoring import AccessibilityScorer
 from .rules import (
     language_check,
     title_check,
@@ -9,6 +10,7 @@ from .rules import (
 
 __all__ = [
     "AccessibilityEvaluator",
+    "AccessibilityScorer",
     "language_check",
     "title_check",
     "heading_check",

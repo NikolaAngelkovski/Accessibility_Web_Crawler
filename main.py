@@ -4,6 +4,7 @@ from crawler import Crawler, URLManager
 from parser import HTMLParser
 from accessibility import (
     AccessibilityEvaluator,
+    AccessibilityScorer,
     language_check,
     title_check,
     heading_check,
@@ -52,6 +53,8 @@ def main():
     evaluator.register_rule(
         link_check
     )
+
+    scorer = AccessibilityScorer()
 
     database = Database("crawler.db")
 
@@ -111,6 +114,10 @@ def main():
             page_data
         )
 
+        score = scorer.calculate(
+            evaluation
+        )
+
         database.save_page(
             crawl_result,
             page_data,
@@ -148,6 +155,18 @@ def main():
         print(
             f"Errors: "
             f"{summary['errors']}"
+        )
+
+        print("\nAccessibility Score:")
+
+        print(
+            f"Score: "
+            f"{score['score']}/100"
+        )
+
+        print(
+            f"Grade: "
+            f"{score['grade']}"
         )
 
         links = [
