@@ -106,10 +106,9 @@ class HTMLParser:
         ):
             level = int(heading.name[1:])
 
-            text = heading.get_text(
-                " ",
-                strip=True
-            )
+            text = " ".join(
+    heading.get_text(" ", strip=True).split()
+)
 
             headings.append({
                 "level": level,
